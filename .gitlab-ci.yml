@@ -2,10 +2,10 @@ stages:
   - build
 
 variables:
-  IMAGE_NAME: "sdns-test-gitlab"
+  IMAGE_NAME: "sdns-new"
   DOCKER_REGISTRY: "registry.gitlab.com"
   DOCKER_TAG_LATEST: "latest"
-  DOCKER_IMAGE: "$DOCKER_REGISTRY/ivannajwan22/test1/$IMAGE_NAME"
+  DOCKER_IMAGE: "$DOCKER_REGISTRY/ivannajwan22/sdns-test/$IMAGE_NAME"
   DOCKER_BUILDKIT: 1  # Mengaktifkan Docker BuildKit
   DOCKER_CLI_EXPERIMENTAL: "enabled"  # Mengaktifkan fitur eksperimen Docker CLI
   DOCKER_PLATFORM: "linux/arm64,linux/amd64"  # Platform yang digunakan untuk build multi-arch
