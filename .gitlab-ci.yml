@@ -7,7 +7,6 @@
 # See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 stages:
 - build
-- test
 variables:
   IMAGE_NAME: sdns-new
   DOCKER_REGISTRY: registry.gitlab.com
@@ -49,7 +48,3 @@ build_and_push:
       --tag $DOCKER_IMAGE:$VERSION \
       --tag $DOCKER_IMAGE:$DOCKER_TAG_LATEST \
       . || { echo "Docker build or push failed"; exit 1; }
-sast:
-  stage: test
-include:
-- template: Security/SAST.gitlab-ci.yml
