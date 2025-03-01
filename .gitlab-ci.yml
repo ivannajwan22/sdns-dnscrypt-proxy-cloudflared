@@ -14,7 +14,7 @@ variables:
   DOCKER_IMAGE: "$DOCKER_REGISTRY/ivannajwan22/sdns-test/$IMAGE_NAME"
   DOCKER_BUILDKIT: 1
   DOCKER_CLI_EXPERIMENTAL: enabled
-  DOCKER_PLATFORM: linux/arm64,linux/amd64
+  DOCKER_PLATFORM: linux/arm64
 build_and_push:
   image: docker:27
   stage: build
