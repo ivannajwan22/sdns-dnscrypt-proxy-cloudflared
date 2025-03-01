@@ -14,16 +14,13 @@ variables:
 build_and_push:
   image: docker:27
   stage: build
-  tags:
-    - saas-linux-large-arm64
-    - saas-linux-medium-arm64
   services:
     - name: docker:27-dind
       command:
         - "--experimental"
         - "--storage-driver=overlay2"
   before_script:
-    - apk add --no-cache git go
+    - apk add --no-cache git go  # Tambahkan Go untuk go mod tidy
     - git --version
     - go version
     - echo "Logging into GitLab Container Registry..."
@@ -33,12 +30,15 @@ build_and_push:
         echo "Login failed, exiting pipeline."
         exit 1
       fi
-    - go mod tidy
+    - go mod tidy  # Sinkronkan dependensi
   script:
     - |
       BUILD_TIMESTAMP=$(date +'%Y-%m-%d_%H-%M-%S')
       VERSION="build-$BUILD_TIMESTAMP"
       echo "Building Docker image version: ${VERSION}"
+      docker buildx ls || docker run --rm --privileged tonistiigi/binfmt:latest --install all
+      docker buildx use || docker buildx create --use
+      docker buildx inspect --bootstrap
       docker buildx build \
         --platform $DOCKER_PLATFORM \
         --push \
