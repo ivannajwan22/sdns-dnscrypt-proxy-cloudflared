@@ -20,7 +20,7 @@ build_and_push:
         - "--experimental"
         - "--storage-driver=overlay2"
   before_script:
-    - apk add --no-cache git go  # Tambahkan Go untuk go mod tidy
+    - apk add --no-cache git go
     - git --version
     - go version
     - echo "Logging into GitLab Container Registry..."
@@ -30,7 +30,7 @@ build_and_push:
         echo "Login failed, exiting pipeline."
         exit 1
       fi
-    - go mod tidy  # Sinkronkan dependensi
+    - go mod tidy
   script:
     - |
       BUILD_TIMESTAMP=$(date +'%Y-%m-%d_%H-%M-%S')
