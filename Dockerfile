@@ -1,3 +1,4 @@
+# sdns
 # Stage 1: Build Stage
 FROM golang:alpine AS builder
 
@@ -19,7 +20,7 @@ WORKDIR /src
 
 # Copy Go module files and download dependencies
 COPY go.mod go.sum ./
-RUN go mod download && go mod verify
+RUN go mod download && go mod verify && go mod tidy
 
 # Copy source code
 COPY . .
@@ -27,7 +28,7 @@ COPY . .
 # Build the sdns binary with static linking
 RUN go build -trimpath -ldflags "-linkmode external -extldflags -static -s -w" -o /tmp/sdns && \
     strip --strip-all /tmp/sdns && \
-    upx --best /tmp/sdns
+    upx -8 --no-lzma /tmp/sdns
 
 # Stage 2: Runtime Stage
 FROM scratch
@@ -41,3 +42,6 @@ EXPOSE 53/tcp 53/udp 853 8053 8080
 
 # Set the entrypoint
 ENTRYPOINT ["/sdns"]
+
+HEALTHCHECK --interval=60s --timeout=3s --start-period=5s --retries=2 \
+    CMD ["/sdns", "--version"] || exit 1
