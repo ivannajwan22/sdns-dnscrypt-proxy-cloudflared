@@ -2,7 +2,7 @@ name: Linter
 on:
   push:
     tags:
-      - v*  # Trigger pada tag seperti v1.0.0, v2.3.4-beta, dll.
+      - v*
     branches:
       - master
   pull_request:
@@ -29,6 +29,6 @@ jobs:
         uses: golangci/golangci-lint-action@v6
         with:
           version: v1.62.2
-          args: --timeout=4m  # Tambah timeout karena repo besar
+          args: --timeout=4m
           # Uncomment kalo mau hanya lihat isu baru di PR
           # only-new-issues: true
