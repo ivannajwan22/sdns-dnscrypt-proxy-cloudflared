@@ -19,12 +19,13 @@ RUN if [ "${TARGETVARIANT}" = "v6" ] && [ "${TARGETARCH}" = "arm" ]; then export
 WORKDIR /src/sdns
 ARG TARGETARCH
 ENV GOARCH=${TARGETARCH}
+ENV CGO_ENABLED=1
 COPY go.mod go.sum ./
 RUN go mod download && go mod verify && go mod tidy
 COPY . ./
 RUN go build -trimpath -ldflags "-linkmode external -extldflags -static -s -w" -o /sdns && \
     strip --strip-all /sdns && \
-    upx -8 --no-lzma /sdns
+    upx -7 --no-lzma /sdns
 
 # Build dnscrypt-proxy
 WORKDIR /src/dnscrypt_proxy
@@ -38,7 +39,7 @@ WORKDIR /config/dnscrypt_proxy
 RUN cp -a /src/dnscrypt_proxy/dnscrypt-proxy.toml /config/dnscrypt_proxy/dnscrypt-proxy.toml
 
 # Tahap Runtime
-FROM busybox:stable-uclibc
+FROM busybox:stable-musl
 
 COPY --from=build /cloudflared /usr/local/bin/cloudflared
 COPY --from=build /sdns /usr/local/bin/sdns
