@@ -1,7 +1,18 @@
 # Tahap Build
 FROM --platform=$BUILDPLATFORM golang:alpine AS build
 
-RUN apk --no-cache add ca-certificates git build-base bash gcc musl-dev binutils-gold upx
+RUN apk --no-cache add ca-certificates git build-base bash gcc musl-dev g++ make linux-headers bash curl tar xz
+
+WORKDIR /tmp/musl-cross-make
+RUN curl -L https://github.com/richfelker/musl-cross-make/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1 && \
+    echo "TARGET = aarch64-linux-musl" > config.mak && \
+    echo "OUTPUT = /usr/local/musl-cross-make" >> config.mak && \
+    make -j$(nproc)
+
+
+ENV PATH="/usr/local/musl-cross-make/bin:$PATH"
+RUN aarch64-linux-musl-gcc --version
+RUN apk --no-cache add upx
 
 # Build cloudflared
 WORKDIR /src/cloudflared
@@ -20,10 +31,9 @@ WORKDIR /src/sdns
 ARG TARGETARCH
 ENV GOARCH=${TARGETARCH}
 ENV CGO_ENABLED=1
-RUN apk add --no-cache gcc-aarch64-linux-musl binutils-aarch64-linux-musl
-ENV CC=aarch64-alpine-linux-musl-gcc
-ENV AS=aarch64-alpine-linux-musl-as
-RUN aarch64-alpine-linux-musl-gcc --version
+ENV CC=aarch64-linux-musl-gcc
+ENV AS=aarch64-linux-musl-as
+RUN ${CC} --version
 COPY go.mod go.sum ./
 RUN go mod download && go mod verify && go mod tidy
 COPY . ./
