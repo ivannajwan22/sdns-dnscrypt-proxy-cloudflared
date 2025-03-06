@@ -4,6 +4,7 @@ require (
 	github.com/BurntSushi/toml v1.4.0
 	github.com/cespare/xxhash/v2 v2.3.0
 	github.com/miekg/dns v1.1.63
+
 	github.com/prometheus/client_golang v1.21.1
 	github.com/quic-go/quic-go v0.50.0
 	github.com/semihalev/log v0.1.1
