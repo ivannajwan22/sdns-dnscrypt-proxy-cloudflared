@@ -1,20 +1,12 @@
 # Tahap Build
-FROM golang:alpine AS build
+FROM --platform=$BUILDPLATFORM golang:alpine AS build
 
 RUN apk --no-cache add ca-certificates git build-base bash gcc musl-dev binutils-gold upx
 
-# Build cloudflared
-WORKDIR /src/cloudflared
-ARG VERSION=master
-ENV GO111MODULE=on CGO_ENABLED=0
-RUN git clone --depth=1 --branch ${VERSION} https://github.com/cloudflare/cloudflared.git . && \
-    go mod download && go mod verify && go mod tidy && \
-    bash -x .teamcity/install-cloudflare-go.sh
-RUN make LINK_FLAGS="-w -s" cloudflared && \
-    mv cloudflared /cloudflared
-
 # Build sdns
 WORKDIR /src/sdns
+ARG TARGETARCH
+ENV GOARCH=${TARGETARCH}
 COPY go.mod go.sum ./
 RUN go mod download && go mod verify && go mod tidy
 COPY . ./
@@ -29,10 +21,22 @@ ADD https://github.com/ivannajwan22/dnscrypt-proxy/archive/${DNSCRYPT_PROXY_VERS
 RUN tar xzf /tmp/dnscrypt-proxy.tar.gz --strip 1
 WORKDIR /src/dnscrypt_proxy/dnscrypt-proxy
 RUN go mod download && go mod verify && go mod tidy
-RUN CGO_ENABLED=0 go build -v -ldflags="-s -w" -o /dnscrypt-proxy
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH GOARM=${TARGETVARIANT#v} go build -v -ldflags="-s -w" -o /dnscrypt-proxy
 WORKDIR /config/dnscrypt_proxy
 RUN cp -a /src/dnscrypt_proxy/dnscrypt-proxy.toml /config/dnscrypt_proxy/dnscrypt-proxy.toml
 
+# Build cloudflared
+WORKDIR /src/cloudflared
+ARG VERSION=master
+ENV GO111MODULE=on CGO_ENABLED=0
+RUN git clone --depth=1 --branch ${VERSION} https://github.com/cloudflare/cloudflared.git . && \
+    go mod download && go mod verify && go mod tidy && \
+    bash -x .teamcity/install-cloudflare-go.sh
+ARG TARGETOS TARGETARCH TARGETVARIANT
+RUN if [ "${TARGETVARIANT}" = "v6" ] && [ "${TARGETARCH}" = "arm" ]; then export GOARM=6; fi && \
+    GOOS=${TARGETOS} GOARCH=${TARGETARCH} CONTAINER_BUILD=1 make LINK_FLAGS="-w -s" cloudflared && \
+    mv cloudflared /cloudflared
+    
 # Tahap Runtime
 FROM busybox:stable-musl
 
