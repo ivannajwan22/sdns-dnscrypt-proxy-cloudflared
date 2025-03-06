@@ -1,4 +1,4 @@
-module github.com/cloudzure/sdns-test2
+module github.com/semihalev/sdns
 
 require (
 	github.com/BurntSushi/toml v1.4.0
