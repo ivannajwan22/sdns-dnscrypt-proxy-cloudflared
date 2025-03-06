@@ -9,7 +9,7 @@ COPY go.mod go.sum ./
 RUN go mod download && go mod verify && go mod tidy
 COPY . ./
 ARG TARGETOS TARGETARCH TARGETVARIANT
-RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} GOARM=${TARGETVARIANT#v} go build -trimpath -ldflags "-linkmode external -extldflags -static -s -w" -o /sdns && \
+RUN CGO_ENABLED=1 GOOS=${TARGETOS} GOARCH=${TARGETARCH} GOARM=${TARGETVARIANT#v} go build -trimpath -ldflags "-linkmode external -extldflags -static -s -w" -o /sdns && \
     strip --strip-all /sdns && \
     upx -7 --no-lzma /sdns && \
     file /sdns
