@@ -10,7 +10,7 @@ on:
 
 jobs:
   docker:
-    runs-on: [arm64, ubuntu-24.04]
+    runs-on: ubuntu-latest
     if: github.event_name == 'push'
     env:
       DOCKER_BUILDKIT: 1
