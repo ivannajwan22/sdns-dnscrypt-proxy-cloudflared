@@ -4,12 +4,13 @@ require (
 	github.com/BurntSushi/toml v1.4.0
 	github.com/cespare/xxhash/v2 v2.3.0
 	github.com/miekg/dns v1.1.63
-	github.com/prometheus/client_golang v1.21.0
-	github.com/quic-go/quic-go v0.49.0
+
+	github.com/prometheus/client_golang v1.21.1
+	github.com/quic-go/quic-go v0.50.0
 	github.com/semihalev/log v0.1.1
 	github.com/stretchr/testify v1.10.0
 	github.com/yl2chen/cidranger v1.0.2
-	golang.org/x/time v0.10.0
+	golang.org/x/time v0.11.0
 )
 
 require (
@@ -43,5 +44,4 @@ require (
 )
 
 go 1.22
-
-toolchain go1.22.5
+toolchain go1.23.7
