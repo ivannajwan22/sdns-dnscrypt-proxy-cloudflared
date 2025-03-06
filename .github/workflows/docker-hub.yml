@@ -17,6 +17,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.7'  # Sesuaikan dengan versi Go yang Anda gunakan
+
+      - name: Update Go Modules
+        run: |
+          go mod tidy
+          go mod download
+          go mod verify
+
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
