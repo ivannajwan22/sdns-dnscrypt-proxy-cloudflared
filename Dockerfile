@@ -3,8 +3,13 @@ FROM golang:bookworm AS sdns-build
 RUN apt-get update && apt-get install -y \
     build-essential \
     ca-certificates \
-    upx \
+    wget \
+    xz-utils \
     && rm -rf /var/lib/apt/lists/*
+# Unduh UPX manual dari GitHub
+RUN wget -O /tmp/upx.tar.xz https://github.com/upx/upx/releases/download/v5.0.0/upx-5.0.0-arm64_linux.tar.xz && \
+    tar -xJf /tmp/upx.tar.xz -C /usr/local/bin --strip-components=1 upx-5.0.0-arm64_linux/upx && \
+    rm /tmp/upx.tar.xz
 WORKDIR /src/sdns
 COPY go.mod go.sum ./
 RUN go mod download && go mod verify && go mod tidy
