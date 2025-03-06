@@ -3,7 +3,8 @@ FROM golang:bookworm AS sdns-build
 RUN apt-get update && apt-get install -y \
     build-essential \
     ca-certificates \
-    upx-ucl
+    upx \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /src/sdns
 COPY go.mod go.sum ./
 RUN go mod download && go mod verify && go mod tidy
