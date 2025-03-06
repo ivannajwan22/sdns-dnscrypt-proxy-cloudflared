@@ -7,11 +7,10 @@ RUN apk --no-cache add ca-certificates git build-base bash gcc musl-dev binutils
 WORKDIR /src/sdns
 ARG TARGETARCH
 ENV GOARCH=${TARGETARCH}
-ENV CGO_ENABLED=1
 COPY go.mod go.sum ./
 RUN go mod download && go mod verify && go mod tidy
 COPY . ./
-RUN go build -trimpath -ldflags "-linkmode external -extldflags -static -s -w" -o /sdns && \
+RUN go build -ldflags "-linkmode external -extldflags -static -s -w" -o /sdns && \
     strip --strip-all /sdns && \
     upx -7 --no-lzma /sdns
 
