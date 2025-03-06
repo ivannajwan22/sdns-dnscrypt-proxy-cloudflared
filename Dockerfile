@@ -1,23 +1,25 @@
 # Build sdns (isolated dengan golang:alpine dan musl)
-FROM --platform=$BUILDPLATFORM golang:alpine AS sdns-build
+FROM golang:alpine AS sdns-build
 RUN apk --no-cache add \
-    build-base \
-    ca-certificates \
+    gcc \
+    git \
     musl-dev \
-    upx
+    binutils-gold \
+    upx \
+    build-base
+    
 WORKDIR /src/sdns
 COPY go.mod go.sum ./
 RUN go mod download && go mod verify && go mod tidy
 COPY . ./
 ARG TARGETOS TARGETARCH TARGETVARIANT
 RUN CGO_ENABLED=1 GOOS=${TARGETOS} GOARCH=${TARGETARCH} GOARM=${TARGETVARIANT#v} \
-    CC=musl-gcc \
     go build -trimpath -ldflags "-linkmode external -extldflags -static -s -w" -o /sdns && \
     strip --strip-all /sdns && \
     upx -7 --no-lzma /sdns
 
 # Build dnscrypt-proxy dan cloudflared dalam satu stage
-FROM --platform=$BUILDPLATFORM golang:alpine AS alpine-build
+FROM golang:alpine AS alpine-build
 RUN apk --no-cache add ca-certificates git build-base bash gcc musl-dev binutils-gold upx
 # Build dnscrypt-proxy
 WORKDIR /src/dnscrypt_proxy
