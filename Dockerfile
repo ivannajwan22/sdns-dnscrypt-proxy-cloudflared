@@ -20,8 +20,9 @@ WORKDIR /src/sdns
 ARG TARGETARCH
 ENV GOARCH=${TARGETARCH}
 ENV CGO_ENABLED=1
-RUN apk add --no-cache gcc-aarch64-linux-musl
+RUN apk add --no-cache gcc-aarch64-linux-musl binutils-aarch64-linux-musl
 ENV CC=aarch64-alpine-linux-musl-gcc
+ENV AS=aarch64-alpine-linux-musl-as
 RUN aarch64-alpine-linux-musl-gcc --version
 COPY go.mod go.sum ./
 RUN go mod download && go mod verify && go mod tidy

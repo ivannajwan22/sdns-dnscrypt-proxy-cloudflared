@@ -12,6 +12,8 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
+    env:
+      DOCKER_BUILDKIT: 1
 
     steps:
       - name: Checkout
