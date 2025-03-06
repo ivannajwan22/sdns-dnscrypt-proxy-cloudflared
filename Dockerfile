@@ -8,9 +8,11 @@ WORKDIR /src/sdns
 COPY go.mod go.sum ./
 RUN go mod download && go mod verify && go mod tidy
 COPY . ./
-RUN go build -trimpath -ldflags "-linkmode external -extldflags -static -s -w" -o /sdns && \
+ARG TARGETOS TARGETARCH TARGETVARIANT
+RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} GOARM=${TARGETVARIANT#v} go build -trimpath -ldflags "-linkmode external -extldflags -static -s -w" -o /sdns && \
     strip --strip-all /sdns && \
-    upx -7 --no-lzma /sdns
+    upx -7 --no-lzma /sdns && \
+    file /sdns
 
 # Build dnscrypt-proxy
 WORKDIR /src/dnscrypt_proxy
@@ -19,7 +21,8 @@ ADD https://github.com/ivannajwan22/dnscrypt-proxy/archive/${DNSCRYPT_PROXY_VERS
 RUN tar xzf /tmp/dnscrypt-proxy.tar.gz --strip 1
 WORKDIR /src/dnscrypt_proxy/dnscrypt-proxy
 RUN go mod download && go mod verify && go mod tidy
-RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH GOARM=${TARGETVARIANT#v} go build -v -ldflags="-s -w" -o /dnscrypt-proxy
+RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} GOARM=${TARGETVARIANT#v} go build -v -ldflags="-s -w" -o /dnscrypt-proxy && \
+    file /dnscrypt-proxy
 WORKDIR /config/dnscrypt_proxy
 RUN cp -a /src/dnscrypt_proxy/dnscrypt-proxy.toml /config/dnscrypt_proxy/dnscrypt-proxy.toml
 
