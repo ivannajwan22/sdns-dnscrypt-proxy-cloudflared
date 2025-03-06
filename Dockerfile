@@ -1,33 +1,22 @@
-# Build sdns (isolated with golang:bookworm)
-FROM --platform=$BUILDPLATFORM golang:bookworm AS sdns-build
-RUN apt-get update && apt-get install -y \
-    build-essential \
+# Build sdns (isolated dengan golang:alpine dan musl)
+FROM --platform=$BUILDPLATFORM golang:alpine AS sdns-build
+RUN apk --no-cache add \
+    build-base \
     ca-certificates \
-    wget \
-    xz-utils \
-    gcc-aarch64-linux-gnu \
-    && rm -rf /var/lib/apt/lists/*
-ARG TARGETARCH
-RUN case "$TARGETARCH" in \
-    "amd64") UPX_URL="https://github.com/upx/upx/releases/download/v5.0.0/upx-5.0.0-amd64_linux.tar.xz" ;; \
-    "arm64") UPX_URL="https://github.com/upx/upx/releases/download/v5.0.0/upx-5.0.0-arm64_linux.tar.xz" ;; \
-    "arm") UPX_URL="https://github.com/upx/upx/releases/download/v5.0.0/upx-5.0.0-arm_linux.tar.xz" ;; \
-    *) echo "Unsupported architecture: $TARGETARCH" && exit 1 ;; \
-    esac && \
-    wget -O /tmp/upx.tar.xz "$UPX_URL" && \
-    tar -xJf /tmp/upx.tar.xz -C /usr/local/bin --strip-components=1 "$(basename $UPX_URL .tar.xz)/upx" && \
-    rm /tmp/upx.tar.xz
+    musl-dev \
+    upx
 WORKDIR /src/sdns
 COPY go.mod go.sum ./
 RUN go mod download && go mod verify && go mod tidy
 COPY . ./
-ARG TARGETOS TARGETVARIANT
+ARG TARGETOS TARGETARCH TARGETVARIANT
 RUN CGO_ENABLED=1 GOOS=${TARGETOS} GOARCH=${TARGETARCH} GOARM=${TARGETVARIANT#v} \
-    CC=aarch64-linux-gnu-gcc \
+    CC=musl-gcc \
     go build -trimpath -ldflags "-linkmode external -extldflags -static -s -w" -o /sdns && \
     strip --strip-all /sdns && \
     upx -7 --no-lzma /sdns
 
+# Build dnscrypt-proxy dan cloudflared dalam satu stage
 FROM --platform=$BUILDPLATFORM golang:alpine AS alpine-build
 RUN apk --no-cache add ca-certificates git build-base bash gcc musl-dev binutils-gold upx
 # Build dnscrypt-proxy
@@ -42,7 +31,6 @@ RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} GOARM=${TARGETVARIANT#v}
     go build -v -ldflags="-s -w" -o /dnscrypt-proxy
 WORKDIR /config/dnscrypt_proxy
 RUN cp -a /src/dnscrypt_proxy/dnscrypt-proxy.toml /config/dnscrypt_proxy/dnscrypt-proxy.toml
-
 # Build cloudflared
 WORKDIR /src/cloudflared
 ARG VERSION=master
