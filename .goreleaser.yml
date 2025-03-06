@@ -62,7 +62,7 @@ archives:
     format: tar.gz
     format_overrides:
       - goos: windows
-        format: zip
+        formats: [ 'zip' ]
     wrap_in_directory: true
     files:
       - README.md
