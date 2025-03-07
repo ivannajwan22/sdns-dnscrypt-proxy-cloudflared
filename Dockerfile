@@ -1,18 +1,13 @@
 # Build sdns
 FROM golang:alpine AS app-build
-RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories && \
-    echo "http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories && \
-    echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories && \
-    apk update && \
-    apk --no-cache add ca-certificates git build-base bash gcc musl-dev binutils-gold upx
+RUN apk add --no-cache --update ca-certificates git build-base bash gcc musl-dev binutils-gold
     
 WORKDIR /src/sdns
 COPY go.mod go.sum ./
 RUN go mod download && go mod verify && go mod tidy
 COPY . ./
 RUN go build -trimpath -ldflags "-linkmode external -extldflags -static -s -w" -o /sdns && \
-    strip --strip-all /sdns && \
-    upx -7 --no-lzma /sdns
+    strip --strip-all /sdns
 
 # Build dnscrypt-proxy
 WORKDIR /src/dnscrypt_proxy
@@ -23,7 +18,8 @@ WORKDIR /src/dnscrypt_proxy/dnscrypt-proxy
 RUN go mod download && go mod verify && go mod tidy
 ARG TARGETOS TARGETARCH TARGETVARIANT
 RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} GOARM=${TARGETVARIANT#v} \
-    go build -v -ldflags="-s -w" -o /dnscrypt-proxy
+    go build -v -ldflags="-s -w" -o /dnscrypt-proxy && \
+    strip --strip-all /dnscrypt-proxy
 WORKDIR /config/dnscrypt_proxy
 RUN cp -a /src/dnscrypt_proxy/dnscrypt-proxy.toml /config/dnscrypt_proxy/dnscrypt-proxy.toml && \
     mkdir -p /config/dnscrypt_proxy/cache
@@ -37,7 +33,8 @@ RUN git clone --depth=1 --branch ${VERSION} https://github.com/cloudflare/cloudf
     bash -x .teamcity/install-cloudflare-go.sh
 RUN if [ "${TARGETVARIANT}" = "v6" ] && [ "${TARGETARCH}" = "arm" ]; then export GOARM=6; fi && \
     GOOS=${TARGETOS} GOARCH=${TARGETARCH} CONTAINER_BUILD=1 make LINK_FLAGS="-w -s" cloudflared && \
-    mv cloudflared /cloudflared
+    mv cloudflared /cloudflared && \
+    strip --strip-all /cloudflared
 
 # Tahap Runtime
 FROM busybox:stable-musl
@@ -48,7 +45,7 @@ COPY --from=app-build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=app-build /config/dnscrypt_proxy /config/dnscrypt_proxy
 COPY start.sh /start.sh
 RUN chmod +x /start.sh && \
-    mkdir -p /var/cache/dnscrypt-proxy && chmod 777 /var/cache/dnscrypt-proxy
+    mkdir -p /var/cache/dnscrypt-proxy && chmod 755 /var/cache/dnscrypt-proxy
 
 EXPOSE 53/tcp 53/udp 6053/tcp 6053/udp 5053/tcp 5053/udp 853 8053 8080
 
