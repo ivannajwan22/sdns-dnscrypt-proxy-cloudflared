@@ -1,26 +1,29 @@
 # Build sdns (isolated dengan golang:alpine dan musl)
 FROM golang:alpine AS sdns-build
-RUN apk --no-cache add \
-    gcc \
-    git \
-    musl-dev \
-    binutils-gold \
-    upx \
-    build-base
+RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories && \
+    echo "http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories && \
+    echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories && \
+    apk update && \
+    apk --no-cache add ca-certificates git build-base gcc musl-dev binutils-gold upx
     
 WORKDIR /src/sdns
 COPY go.mod go.sum ./
 RUN go mod download && go mod verify && go mod tidy
 COPY . ./
 ARG TARGETOS TARGETARCH TARGETVARIANT
-RUN CGO_ENABLED=1 GOOS=${TARGETOS} GOARCH=${TARGETARCH} GOARM=${TARGETVARIANT#v} \
+RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} GOARM=${TARGETVARIANT#v} \
     go build -trimpath -ldflags "-linkmode external -extldflags -static -s -w" -o /sdns && \
     strip --strip-all /sdns && \
     upx -7 --no-lzma /sdns
 
-# Build dnscrypt-proxy dan cloudflared dalam satu stage
+# Build dnscrypt-proxy and cloudflared
 FROM golang:alpine AS alpine-build
-RUN apk --no-cache add ca-certificates git build-base bash gcc musl-dev binutils-gold upx
+RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories && \
+    echo "http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories && \
+    echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories && \
+    apk update && \
+    apk --no-cache add ca-certificates git build-base bash gcc musl-dev binutils-gold
+
 # Build dnscrypt-proxy
 WORKDIR /src/dnscrypt_proxy
 ARG DNSCRYPT_PROXY_VERSION=master
@@ -32,7 +35,9 @@ ARG TARGETOS TARGETARCH TARGETVARIANT
 RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} GOARM=${TARGETVARIANT#v} \
     go build -v -ldflags="-s -w" -o /dnscrypt-proxy
 WORKDIR /config/dnscrypt_proxy
-RUN cp -a /src/dnscrypt_proxy/dnscrypt-proxy.toml /config/dnscrypt_proxy/dnscrypt-proxy.toml
+RUN cp -a /src/dnscrypt_proxy/dnscrypt-proxy.toml /config/dnscrypt_proxy/dnscrypt-proxy.toml && \
+    mkdir -p /config/dnscrypt_proxy/cache
+    
 # Build cloudflared
 WORKDIR /src/cloudflared
 ARG VERSION=master
@@ -52,7 +57,8 @@ COPY --from=alpine-build /dnscrypt-proxy /usr/local/bin/dnscrypt-proxy
 COPY --from=alpine-build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=alpine-build /config/dnscrypt_proxy /config/dnscrypt_proxy
 COPY start.sh /start.sh
-RUN chmod +x /start.sh
+RUN chmod +x /start.sh && \
+    mkdir -p /var/cache/dnscrypt-proxy && chmod 777 /var/cache/dnscrypt-proxy
 
 EXPOSE 53/tcp 53/udp 6053/tcp 6053/udp 5053/tcp 5053/udp 853 8053 8080
 
