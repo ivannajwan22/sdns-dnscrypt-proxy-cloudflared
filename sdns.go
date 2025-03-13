@@ -13,10 +13,10 @@ import (
 	"time"
 
 	"github.com/semihalev/log"
-	"github.com/cloudzure/sdns-test2/api"
-	"github.com/cloudzure/sdns-test2/config"
-	"github.com/cloudzure/sdns-test2/middleware"
-	"github.com/cloudzure/sdns-test2/server"
+	"github.com/semihalev/sdns/api"
+	"github.com/semihalev/sdns/config"
+	"github.com/semihalev/sdns/middleware"
+	"github.com/semihalev/sdns/server"
 )
 
 const version = "1.4.0"
