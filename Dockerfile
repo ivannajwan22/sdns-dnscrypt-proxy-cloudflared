@@ -28,7 +28,7 @@ RUN cp -a /src/dnscrypt_proxy/dnscrypt-proxy.toml /config/dnscrypt_proxy/dnscryp
 WORKDIR /src/cloudflared
 ARG VERSION=master
 ENV GO111MODULE=on CGO_ENABLED=0
-RUN git clone --depth=1 --branch ${VERSION} https://github.com/cloudflare/cloudflared.git . && \
+RUN git clone --depth=1 --branch ${VERSION} https://github.com/ivannajwan22/cloudflared.git . && \
     go mod download && go mod verify && go mod tidy && \
     bash -x .teamcity/install-cloudflare-go.sh
 RUN if [ "${TARGETVARIANT}" = "v6" ] && [ "${TARGETARCH}" = "arm" ]; then export GOARM=6; fi && \
