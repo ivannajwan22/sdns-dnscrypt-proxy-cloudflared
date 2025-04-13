@@ -3,7 +3,7 @@ module github.com/semihalev/sdns
 require (
 	github.com/BurntSushi/toml v1.5.0
 	github.com/cespare/xxhash/v2 v2.3.0
-	github.com/miekg/dns v1.1.64
+	github.com/miekg/dns v1.1.65
 	github.com/prometheus/client_golang v1.21.1
 	github.com/quic-go/quic-go v0.50.1
 	github.com/semihalev/log v0.1.1
