@@ -5,7 +5,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.3.0
 	github.com/miekg/dns v1.1.65
 	github.com/prometheus/client_golang v1.22.0
-	github.com/quic-go/quic-go v0.50.1
+	github.com/quic-go/quic-go v0.51.0
 	github.com/semihalev/log v0.1.1
 	github.com/stretchr/testify v1.10.0
 	github.com/yl2chen/cidranger v1.0.2
@@ -30,7 +30,6 @@ require (
 	github.com/quic-go/qpack v0.5.1 // indirect
 	go.uber.org/mock v0.5.0 // indirect
 	golang.org/x/crypto v0.36.0 // indirect
-	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394 // indirect
 	golang.org/x/mod v0.24.0 // indirect
 	golang.org/x/net v0.37.0 // indirect
 	golang.org/x/sync v0.12.0 // indirect
