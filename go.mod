@@ -5,7 +5,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.3.0
 	github.com/miekg/dns v1.1.66
 	github.com/prometheus/client_golang v1.22.0
-	github.com/quic-go/quic-go v0.52.0
+	github.com/quic-go/quic-go v0.54.0
 	github.com/semihalev/log v0.1.1
 	github.com/stretchr/testify v1.10.0
 	github.com/yl2chen/cidranger v1.0.2
@@ -16,13 +16,10 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
-	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
-	github.com/google/pprof v0.0.0-20250317173921-a4b03ec1a45e // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
-	github.com/onsi/ginkgo/v2 v2.23.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/common v0.63.0 // indirect
